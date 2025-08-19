@@ -3,60 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bacheca Organizzativa</title>
+  <title>Bacheca Post-it</title>
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      background: #fdf6e3;
       overflow: hidden;
     }
 
     .bacheca {
+      flex: 1;
       position: relative;
-      width: 100vw;
-      height: 100vh;
-      background: #f5deb3;
+      background: url('https://www.transparenttextures.com/patterns/cork-board.png');
       overflow: hidden;
-    }
-
-    /* Pulsanti in alto */
-    .top-buttons {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      right: 5px;
-      display: flex;
-      justify-content: space-between;
-      z-index: 20;
-    }
-
-    .top-left {
-      display: flex;
-      gap: 12px; /* distanza tra + e 🗑️ */
-    }
-
-    .btn {
-      padding: 8px;
-      margin: 2px;
-      background: #333;
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 20px;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-rect {
-      border-radius: 8px;
-      width: auto;
-      height: auto;
-      font-size: 14px;
-      padding: 8px 12px;
     }
 
     /* Fasce */
@@ -70,257 +32,288 @@
       line-height: 2;
       pointer-events: none;
       opacity: 0.85;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding-top: 40px;
     }
+    .urgenti { top: 0; background: rgba(244, 67, 54, 0.2); border-bottom: 3px solid #e53935; color: #b71c1c; }
+    .dafare { top: 33.33%; background: rgba(255, 152, 0, 0.2); border-bottom: 3px solid #fb8c00; color: #e65100; }
+    .trascurabili { bottom: 0; background: rgba(76, 175, 80, 0.2); color: #2e7d32; }
 
-    .urgenti {
-      top: 0;
-      background: rgba(244, 67, 54, 0.2);
-      border-bottom: 3px solid #e53935;
-      color: #b71c1c;
-    }
-
-    .dafare {
-      top: 33.33%;
-      background: rgba(255, 152, 0, 0.2);
-      border-bottom: 3px solid #fb8c00;
-      color: #e65100;
-    }
-
-    .trascurabili {
-      top: 66.66%;
-      background: rgba(76, 175, 80, 0.2);
-      color: #2e7d32;
-    }
-
-    /* Post-it migliorati */
+    /* Post-it */
     .postit {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #fff176, #fdd835);
+      width: 90px;
+      height: 90px;
+      background: #fff176;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      padding: 8px;
       border-radius: 6px;
-      box-shadow: 3px 3px 8px rgba(0,0,0,0.25);
-      padding: 5px;
+      position: absolute;
       cursor: grab;
-      z-index: 10;
-      transition: transform 0.15s ease;
+      user-select: none;
+      transform: rotate(2deg);
+      transition: transform 0.1s;
     }
-
-    .postit:hover {
-      transform: scale(1.05);
-      z-index: 15;
-    }
-
-    .postit:active {
-      cursor: grabbing;
-    }
-
+    .postit:active { transform: scale(1.05) rotate(0deg); }
     .spillo {
       width: 12px;
       height: 12px;
       background: red;
       border-radius: 50%;
       position: absolute;
-      top: 3px;
-      left: 3px;
-      box-shadow: 0 0 3px rgba(0,0,0,0.4);
+      top: 4px;
+      left: 4px;
     }
-
-    .postit textarea {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: transparent;
-      resize: none;
-      font-family: "Comic Sans MS", cursive, sans-serif;
-      font-size: 12px;
-      outline: none;
-      padding: 3px;
+    .postit p {
+      margin: 20px 0 0 0;
+      font-size: 13px;
+      word-wrap: break-word;
     }
+    .postit[contenteditable="true"]:focus { outline: 2px dashed #333; }
 
-    /* Cestino fisso */
-    .cestino {
+    /* Pulsanti */
+    .controls {
       position: absolute;
-      bottom: 10px;
+      top: 10px;
       left: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .controls button {
       width: 50px;
       height: 50px;
-      background: gray;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      color: white;
-      z-index: 20;
+      border-radius: 50%;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+    #btnCestino { background: #f44336; color: white; }
+    #btnClear { background: #9e9e9e; color: white; }
+    #btnAggiungi {
+      background: #2196f3; color: white;
+      position: absolute; right: 10px; top: 10px;
     }
 
-    /* Popup */
-    .popup {
+    /* Icone calendario e taccuino */
+    .icons {
       position: absolute;
-      top: 50px;
+      top: 70px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .icons button {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: none;
+      background: #fff;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Pannelli calendario e taccuino */
+    .panel {
+      position: absolute;
+      top: 60px;
       right: 10px;
       width: 90%;
-      max-width: 350px;
-      height: 60%;
+      height: 80%;
+      max-width: 400px;
       background: white;
-      border: 2px solid #333;
+      border: 2px solid #ccc;
       border-radius: 8px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      padding: 10px;
       display: none;
       flex-direction: column;
-      z-index: 30;
-      padding: 10px;
     }
-
-    .popup textarea {
-      width: 100%;
-      height: 100%;
+    .panel.active { display: flex; }
+    .panel textarea {
+      flex: 1;
       resize: none;
+      margin-top: 5px;
       font-size: 14px;
-      padding: 5px;
     }
-
-    .popup .close {
+    .panel .closeBtn {
       align-self: flex-end;
+      background: transparent;
+      border: none;
+      font-size: 20px;
       cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <div class="bacheca" id="bacheca">
-
-    <!-- Pulsanti -->
-    <div class="top-buttons">
-      <div class="top-left">
-        <button class="btn" onclick="creaPostIt()">+</button>
-        <button class="btn" onclick="cancellaTutti()">🗑️</button>
-      </div>
-      <div>
-        <button class="btn btn-rect" onclick="toggleCalendario()">📅</button>
-        <button class="btn btn-rect" onclick="toggleTaccuino()">📓</button>
-      </div>
-    </div>
-
     <!-- Fasce -->
     <div class="fascia urgenti">URGENTI</div>
     <div class="fascia dafare">DA FARE</div>
     <div class="fascia trascurabili">TRASCURABILI</div>
 
-    <!-- Cestino -->
-    <div class="cestino" id="cestino">🗑️</div>
+    <!-- Pulsanti -->
+    <div class="controls">
+      <button id="btnClear">❌</button>
+      <button id="btnCestino">🗑️</button>
+    </div>
+    <button id="btnAggiungi">➕</button>
 
-    <!-- Calendario -->
-    <div class="popup" id="calendario">
-      <div class="close" onclick="toggleCalendario()">X</div>
-      <h3>Calendario</h3>
-      <input type="date" id="dataInput">
-      <textarea id="notaCalendario" placeholder="Scrivi appunto..."></textarea>
-      <button onclick="salvaNota()">Salva</button>
+    <!-- Icone calendario e taccuino -->
+    <div class="icons">
+      <button id="btnCalendar">📅</button>
+      <button id="btnNotes">📓</button>
     </div>
 
-    <!-- Taccuino -->
-    <div class="popup" id="taccuino">
-      <div class="close" onclick="toggleTaccuino()">X</div>
+    <!-- Pannelli -->
+    <div class="panel" id="calendarPanel">
+      <button class="closeBtn" onclick="chiudiPanel('calendarPanel')">✖</button>
+      <h3>Calendario</h3>
+      <input type="date" id="data">
+      <textarea id="notaCalendario" placeholder="Scrivi appunto..."></textarea>
+      <button onclick="salvaNotaCalendario()">Salva</button>
+    </div>
+
+    <div class="panel" id="notesPanel">
+      <button class="closeBtn" onclick="chiudiPanel('notesPanel')">✖</button>
       <h3>Taccuino</h3>
       <textarea id="notaTaccuino" placeholder="Scrivi idea..."></textarea>
-      <button onclick="salvaTaccuino()">Salva</button>
+      <button onclick="salvaNotaTaccuino()">Salva</button>
     </div>
   </div>
 
   <script>
-    const bacheca = document.getElementById('bacheca');
-    const cestino = document.getElementById('cestino');
-    let dragging = null;
-    let offsetX = 0, offsetY = 0;
+    const bacheca = document.getElementById("bacheca");
+    const btnAggiungi = document.getElementById("btnAggiungi");
+    const btnClear = document.getElementById("btnClear");
+    const btnCestino = document.getElementById("btnCestino");
+    const btnCalendar = document.getElementById("btnCalendar");
+    const btnNotes = document.getElementById("btnNotes");
+    const calendarPanel = document.getElementById("calendarPanel");
+    const notesPanel = document.getElementById("notesPanel");
 
-    function creaPostIt() {
-      const postit = document.createElement('div');
-      postit.className = 'postit';
-      postit.style.top = '120px';
-      postit.style.left = '120px';
-      postit.style.transform = `rotate(${(Math.random() * 6 - 3)}deg)`;
+    let postits = JSON.parse(localStorage.getItem("postits")) || [];
+    let calendario = JSON.parse(localStorage.getItem("calendario")) || {};
+    let taccuino = localStorage.getItem("taccuino") || "";
 
-      const spillo = document.createElement('div');
-      spillo.className = 'spillo';
-      postit.appendChild(spillo);
+    // Carica post-it salvati
+    postits.forEach(data => creaPostit(data.text, data.x, data.y));
 
-      const textarea = document.createElement('textarea');
-      postit.appendChild(textarea);
+    // Aggiungi Post-it
+    btnAggiungi.addEventListener("click", () => {
+      creaPostit("Nuovo", 100, 100);
+      salva();
+    });
 
-      postit.addEventListener('mousedown', (e) => {
-        if (e.target.tagName !== 'TEXTAREA') {
-          dragging = postit;
-          offsetX = e.offsetX;
-          offsetY = e.offsetY;
-        }
-      });
+    // Cancella tutto
+    btnClear.addEventListener("click", () => {
+      if(confirm("Sei sicuro di voler cancellare tutto?")){
+        postits = [];
+        localStorage.removeItem("postits");
+        document.querySelectorAll(".postit").forEach(p => p.remove());
+      }
+    });
 
-      postit.addEventListener('touchstart', (e) => {
-        dragging = postit;
-        offsetX = e.touches[0].clientX - postit.offsetLeft;
-        offsetY = e.touches[0].clientY - postit.offsetTop;
-      });
+    // Toggle calendario e taccuino
+    btnCalendar.addEventListener("click", () => {
+      calendarPanel.classList.toggle("active");
+      notesPanel.classList.remove("active");
+    });
+    btnNotes.addEventListener("click", () => {
+      notesPanel.classList.toggle("active");
+      calendarPanel.classList.remove("active");
+      document.getElementById("notaTaccuino").value = taccuino;
+    });
+    function chiudiPanel(id) {
+      document.getElementById(id).classList.remove("active");
+    }
 
+    // Funzioni Post-it
+    function creaPostit(testo, x, y) {
+      const postit = document.createElement("div");
+      postit.className = "postit";
+      postit.style.left = x + "px";
+      postit.style.top = y + "px";
+      postit.innerHTML = `<div class="spillo"></div><p contenteditable="true">${testo}</p>`;
+      rendiTrascinabile(postit);
       bacheca.appendChild(postit);
+      postit.querySelector("p").addEventListener("input", salva);
     }
 
-    document.addEventListener('mousemove', (e) => {
-      if (dragging) {
-        dragging.style.left = (e.pageX - offsetX) + 'px';
-        dragging.style.top = (e.pageY - offsetY) + 'px';
-      }
-    });
+    function rendiTrascinabile(elem) {
+      let offsetX, offsetY, moving = false;
 
-    document.addEventListener('touchmove', (e) => {
-      if (dragging) {
-        dragging.style.left = (e.touches[0].clientX - offsetX) + 'px';
-        dragging.style.top = (e.touches[0].clientY - offsetY) + 'px';
+      function startDrag(e) {
+        moving = true;
+        offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - elem.offsetLeft;
+        offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - elem.offsetTop;
+        elem.style.cursor = "grabbing";
+        elem.style.zIndex = 1000;
       }
-    });
+      function duringDrag(e) {
+        if (!moving) return;
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        elem.style.left = (clientX - offsetX) + "px";
+        elem.style.top = (clientY - offsetY) + "px";
+      }
+      function endDrag(e) {
+        if (!moving) return;
+        moving = false;
+        elem.style.cursor = "grab";
+        elem.style.zIndex = "";
 
-    function endDrag() {
-      if (dragging) {
-        const rectCestino = cestino.getBoundingClientRect();
-        const rectPostIt = dragging.getBoundingClientRect();
-        if (!(rectPostIt.right < rectCestino.left || 
-              rectPostIt.left > rectCestino.right || 
-              rectPostIt.bottom < rectCestino.top || 
-              rectPostIt.top > rectCestino.bottom)) {
-          dragging.remove();
+        // controllo se sopra al cestino
+        const cestino = btnCestino.getBoundingClientRect();
+        const rect = elem.getBoundingClientRect();
+
+        if (rect.right > cestino.left &&
+            rect.left < cestino.right &&
+            rect.bottom > cestino.top &&
+            rect.top < cestino.bottom) {
+          elem.remove();
+          salva();
+          return;
         }
+        salva();
       }
-      dragging = null;
+
+      elem.addEventListener("mousedown", startDrag);
+      document.addEventListener("mousemove", duringDrag);
+      document.addEventListener("mouseup", endDrag);
+      elem.addEventListener("touchstart", startDrag);
+      document.addEventListener("touchmove", duringDrag);
+      document.addEventListener("touchend", endDrag);
     }
 
-    document.addEventListener('mouseup', endDrag);
-    document.addEventListener('touchend', endDrag);
-
-    function cancellaTutti() {
-      document.querySelectorAll('.postit').forEach(p => p.remove());
+    function salva() {
+      postits = [];
+      document.querySelectorAll(".postit").forEach(p => {
+        postits.push({
+          text: p.querySelector("p").innerText,
+          x: p.offsetLeft,
+          y: p.offsetTop
+        });
+      });
+      localStorage.setItem("postits", JSON.stringify(postits));
     }
 
-    function toggleCalendario() {
-      const cal = document.getElementById('calendario');
-      cal.style.display = cal.style.display === 'flex' ? 'none' : 'flex';
+    // Calendario
+    const dataInput = document.getElementById("data");
+    const notaCalendario = document.getElementById("notaCalendario");
+    dataInput.addEventListener("change", () => {
+      notaCalendario.value = calendario[dataInput.value] || "";
+    });
+    function salvaNotaCalendario() {
+      calendario[dataInput.value] = notaCalendario.value;
+      localStorage.setItem("calendario", JSON.stringify(calendario));
+      alert("Nota salvata per il giorno " + dataInput.value);
     }
 
-    function toggleTaccuino() {
-      const tac = document.getElementById('taccuino');
-      tac.style.display = tac.style.display === 'flex' ? 'none' : 'flex';
-    }
-
-    function salvaNota() {
-      alert("Nota calendario salvata (simulazione).");
-    }
-
-    function salvaTaccuino() {
-      alert("Idea salvata nel taccuino (simulazione).");
+    // Taccuino
+    function salvaNotaTaccuino() {
+      taccuino = document.getElementById("notaTaccuino").value;
+      localStorage.setItem("taccuino", taccuino);
+      alert("Nota salvata nel taccuino!");
     }
   </script>
 </body>
