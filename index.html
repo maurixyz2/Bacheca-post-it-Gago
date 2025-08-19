@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bacheca Post-it</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      background: #fdf6e3;
+      overflow: hidden;
+    }
+
+    .bacheca {
+      flex: 1;
+      position: relative;
+      background: url('https://www.transparenttextures.com/patterns/cork-board.png');
+      overflow: hidden;
+    }
+
+    /* Fasce colorate */
+    .fascia {
+      position: absolute;
+      width: 100%;
+      height: 33.33%;
+      text-align: center;
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 2;
+      pointer-events: none;
+      opacity: 0.85;
+    }
+    .urgenti {
+      top: 0;
+      background: rgba(244, 67, 54, 0.2);
+      border-bottom: 3px solid #e53935;
+      color: #b71c1c;
+    }
+    .dafare {
+      top: 33.33%;
+      background: rgba(255, 152, 0, 0.2);
+      border-bottom: 3px solid #fb8c00;
+      color: #e65100;
+    }
+    .trascurabili {
+      bottom: 0;
+      background: rgba(76, 175, 80, 0.2);
+      color: #2e7d32;
+    }
+
+    /* Post-it */
+    .postit {
+      width: 80px;
+      height: 80px;
+      background: #fff176;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      padding: 8px;
+      border-radius: 6px;
+      position: absolute;
+      cursor: grab;
+      user-select: none;
+      transform: rotate(3deg);
+      transition: transform 0.2s ease;
+    }
+    .postit:active {
+      transform: rotate(3deg) scale(1.05);
+    }
+    .spillo {
+      width: 10px;
+      height: 10px;
+      background: red;
+      border-radius: 50%;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+    }
+    .postit p {
+      margin: 15px 0 0 0;
+      font-size: 12px;
+      word-wrap: break-word;
+    }
+    .postit[contenteditable="true"]:focus {
+      outline: 2px dashed #333;
+    }
+
+    /* Pulsanti */
+    .controls {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .controls button {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+    }
+    #btnCestino { background: #f44336; color: white; }
+    #btnClear { background: #9e9e9e; color: white; }
+    #btnAggiungi {
+      background: #2196f3; color: white;
+      position: absolute; right: 10px; bottom: 10px;
+    }
+
+    /* Iconcine */
+    .icons {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .icons button {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      border: none;
+      background: #fff;
+      cursor: pointer;
+      font-size: 20px;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+    }
+
+    /* Pannelli calendario e taccuino */
+    .panel {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      width: 250px;
+      max-height: 300px;
+      background: white;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+    }
+    .panel.active { display: flex; }
+
+    .panel textarea {
+      flex: 1;
+      resize: none;
+      margin-top: 5px;
+    }
+
+    /* Taccuino quasi full screen */
+    #notesPanel {
+      width: 90%;
+      height: 85%;
+      left: 5%;
+      top: 5%;
+      max-height: none;
+      z-index: 2000;
+    }
+    #notesPanel textarea {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      font-size: 16px;
+    }
+
+    /* Pulsante chiusura pannelli */
+    .close-btn {
+      align-self: flex-end;
+      background: #f44336;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bacheca" id="bacheca">
+    <!-- Fasce -->
+    <div class="fascia urgenti">URGENTI</div>
+    <div class="fascia dafare">DA FARE</div>
+    <div class="fascia trascurabili">TRASCURABILI</div>
+
+    <!-- Pulsanti -->
+    <div class="controls">
+      <button id="btnCestino">🗑️</button>
+      <button id="btnClear">❌</button>
+    </div>
+    <button id="btnAggiungi">➕</button>
+
+    <!-- Icone calendario e taccuino -->
+    <div class="icons">
+      <button id="btnCalendar">📅</button>
+      <button id="btnNotes">📓</button>
+    </div>
+
+    <!-- Pannelli -->
+    <div class="panel" id="calendarPanel">
+      <h3>Calendario</h3>
+      <input type="date" id="data">
+      <textarea id="notaCalendario" placeholder="Scrivi appunto..."></textarea>
+      <button onclick="salvaNotaCalendario()">Salva</button>
+    </div>
+
+    <div class="panel" id="notesPanel">
+      <button class="close-btn" onclick="chiudiNotes()">✖</button>
+      <h3>Taccuino</h3>
+      <textarea id="notaTaccuino" placeholder="Scrivi idea..."></textarea>
+      <button onclick="salvaNotaTaccuino()">Salva</button>
+    </div>
+  </div>
+
+  <script>
+    const bacheca = document.getElementById("bacheca");
+    const btnAggiungi = document.getElementById("btnAggiungi");
+    const btnClear = document.getElementById("btnClear");
+    const btnCestino = document.getElementById("btnCestino");
+    const btnCalendar = document.getElementById("btnCalendar");
+    const btnNotes = document.getElementById("btnNotes");
+    const calendarPanel = document.getElementById("calendarPanel");
+    const notesPanel = document.getElementById("notesPanel");
+
+    let postits = JSON.parse(localStorage.getItem("postits")) || [];
+    let calendario = JSON.parse(localStorage.getItem("calendario")) || {};
+    let taccuino = localStorage.getItem("taccuino") || "";
+
+    // Carica post-it salvati
+    postits.forEach(data => creaPostit(data.text, data.x, data.y));
+
+    // Aggiungi Post-it
+    btnAggiungi.addEventListener("click", () => {
+      creaPostit("Nuovo", 100, 100);
+      salva();
+    });
+
+    // Cancella tutto
+    btnClear.addEventListener("click", () => {
+      if(confirm("Sei sicuro di voler cancellare tutto?")){
+        postits = [];
+        localStorage.removeItem("postits");
+        document.querySelectorAll(".postit").forEach(p => p.remove());
+      }
+    });
+
+    // Toggle calendario e taccuino
+    btnCalendar.addEventListener("click", () => {
+      calendarPanel.classList.toggle("active");
+      notesPanel.classList.remove("active");
+    });
+    btnNotes.addEventListener("click", () => {
+      notesPanel.classList.toggle("active");
+      calendarPanel.classList.remove("active");
+      document.getElementById("notaTaccuino").value = taccuino;
+    });
+    function chiudiNotes(){
+      notesPanel.classList.remove("active");
+    }
+
+    // Funzioni Post-it
+    function creaPostit(testo, x, y) {
+      const postit = document.createElement("div");
+      postit.className = "postit";
+      postit.style.left = x + "px";
+      postit.style.top = y + "px";
+      postit.innerHTML = `<div class="spillo"></div><p contenteditable="true">${testo}</p>`;
+      rendiTrascinabile(postit);
+      bacheca.appendChild(postit);
+
+      postit.querySelector("p").addEventListener("input", salva);
+    }
+
+    function rendiTrascinabile(elem) {
+      let offsetX, offsetY, moving = false;
+
+      function startDrag(e) {
+        moving = true;
+        offsetX = (e.touches ? e.touches[0].clientX : e.clientX) - elem.offsetLeft;
+        offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - elem.offsetTop;
+        elem.style.cursor = "grabbing";
+        elem.style.zIndex = 1000;
+      }
+
+      function duringDrag(e) {
+        if (!moving) return;
+        let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        elem.style.left = (clientX - offsetX) + "px";
+        elem.style.top = (clientY - offsetY) + "px";
+      }
+
+      function endDrag() {
+        if (!moving) return;
+        moving = false;
+        elem.style.cursor = "grab";
+        elem.style.zIndex = "";
+
+        // controllo se sopra al cestino
+        const cestino = btnCestino.getBoundingClientRect();
+        const rect = elem.getBoundingClientRect();
+
+        if (rect.right > cestino.left &&
+            rect.left < cestino.right &&
+            rect.bottom > cestino.top &&
+            rect.top < cestino.bottom) {
+          elem.remove();
+          salva();
+          return;
+        }
+
+        salva();
+      }
+
+      // Mouse
+      elem.addEventListener("mousedown", startDrag);
+      document.addEventListener("mousemove", duringDrag);
+      document.addEventListener("mouseup", endDrag);
+
+      // Touch
+      elem.addEventListener("touchstart", startDrag);
+      document.addEventListener("touchmove", duringDrag);
+      document.addEventListener("touchend", endDrag);
+    }
+
+    function salva() {
+      postits = [];
+      document.querySelectorAll(".postit").forEach(p => {
+        postits.push({
+          text: p.querySelector("p").innerText,
+          x: p.offsetLeft,
+          y: p.offsetTop
+        });
+      });
+      localStorage.setItem("postits", JSON.stringify(postits));
+    }
+
+    // Calendario
+    const dataInput = document.getElementById("data");
+    const notaCalendario = document.getElementById("notaCalendario");
+
+    dataInput.addEventListener("change", () => {
+      let val = calendario[dataInput.value] || "";
+      notaCalendario.value = val;
+    });
+
+    function salvaNotaCalendario() {
+      calendario[dataInput.value] = notaCalendario.value;
+      localStorage.setItem("calendario", JSON.stringify(calendario));
+      alert("Nota salvata per il giorno " + dataInput.value);
+    }
+
+    // Taccuino
+    function salvaNotaTaccuino() {
+      taccuino = document.getElementById("notaTaccuino").value;
+      localStorage.setItem("taccuino", taccuino);
+      alert("Nota salvata nel taccuino!");
+    }
+  </script>
+</body>
+</html>
