@@ -21,7 +21,7 @@
       overflow: hidden;
     }
 
-    /* Fasce colorate */
+    /* Fasce */
     .fascia {
       position: absolute;
       width: 100%;
@@ -33,23 +33,9 @@
       pointer-events: none;
       opacity: 0.85;
     }
-    .urgenti {
-      top: 0;
-      background: rgba(244, 67, 54, 0.2);
-      border-bottom: 3px solid #e53935;
-      color: #b71c1c;
-    }
-    .dafare {
-      top: 33.33%;
-      background: rgba(255, 152, 0, 0.2);
-      border-bottom: 3px solid #fb8c00;
-      color: #e65100;
-    }
-    .trascurabili {
-      bottom: 0;
-      background: rgba(76, 175, 80, 0.2);
-      color: #2e7d32;
-    }
+    .urgenti { top: 0; background: rgba(244, 67, 54, 0.2); border-bottom: 3px solid #e53935; color: #b71c1c; }
+    .dafare { top: 33.33%; background: rgba(255, 152, 0, 0.2); border-bottom: 3px solid #fb8c00; color: #e65100; }
+    .trascurabili { bottom: 0; background: rgba(76, 175, 80, 0.2); color: #2e7d32; }
 
     /* Post-it */
     .postit {
@@ -65,9 +51,6 @@
       transform: rotate(3deg);
       transition: transform 0.2s ease;
     }
-    .postit:active {
-      transform: rotate(3deg) scale(1.05);
-    }
     .spillo {
       width: 10px;
       height: 10px;
@@ -77,19 +60,13 @@
       top: 5px;
       left: 5px;
     }
-    .postit p {
-      margin: 15px 0 0 0;
-      font-size: 12px;
-      word-wrap: break-word;
-    }
-    .postit[contenteditable="true"]:focus {
-      outline: 2px dashed #333;
-    }
+    .postit p { margin: 15px 0 0 0; font-size: 12px; word-wrap: break-word; }
+    .postit[contenteditable="true"]:focus { outline: 2px dashed #333; }
 
     /* Pulsanti */
     .controls {
       position: absolute;
-      bottom: 10px;
+      bottom: 70px;
       left: 10px;
       display: flex;
       gap: 10px;
@@ -105,12 +82,9 @@
     }
     #btnCestino { background: #f44336; color: white; }
     #btnClear { background: #9e9e9e; color: white; }
-    #btnAggiungi {
-      background: #2196f3; color: white;
-      position: absolute; right: 10px; bottom: 10px;
-    }
+    #btnAggiungi { background: #2196f3; color: white; position: absolute; right: 10px; bottom: 70px; }
 
-    /* Iconcine */
+    /* Icone */
     .icons {
       position: absolute;
       top: 10px;
@@ -130,7 +104,7 @@
       box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
     }
 
-    /* Pannelli calendario e taccuino */
+    /* Pannelli */
     .panel {
       position: absolute;
       top: 60px;
@@ -146,41 +120,26 @@
       flex-direction: column;
     }
     .panel.active { display: flex; }
+    .panel textarea { flex: 1; resize: none; margin-top: 5px; }
 
-    .panel textarea {
-      flex: 1;
-      resize: none;
-      margin-top: 5px;
-    }
+    /* Taccuino full-screen */
+    #notesPanel { width: 90%; height: 80%; top: 10%; left: 5%; }
+    #notesPanel textarea { width: 100%; height: 100%; font-size: 16px; }
 
-    /* Taccuino quasi full screen */
-    #notesPanel {
-      width: 90%;
-      height: 85%;
-      left: 5%;
-      top: 5%;
-      max-height: none;
-      z-index: 2000;
-    }
-    #notesPanel textarea {
-      flex: 1;
-      width: 100%;
-      height: 100%;
-      font-size: 16px;
-    }
-
-    /* Pulsante chiusura pannelli */
+    /* Pulsante chiudi */
     .close-btn {
-      align-self: flex-end;
+      position: absolute;
+      top: 8px;
+      right: 8px;
       background: #f44336;
       border: none;
       color: white;
-      font-size: 16px;
-      border-radius: 50%;
-      width: 25px;
-      height: 25px;
+      font-size: 18px;
+      font-weight: bold;
       cursor: pointer;
-      margin-bottom: 5px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
     }
   </style>
 </head>
@@ -198,22 +157,24 @@
     </div>
     <button id="btnAggiungi">➕</button>
 
-    <!-- Icone calendario e taccuino -->
+    <!-- Icone -->
     <div class="icons">
       <button id="btnCalendar">📅</button>
       <button id="btnNotes">📓</button>
     </div>
 
-    <!-- Pannelli -->
+    <!-- Calendario -->
     <div class="panel" id="calendarPanel">
+      <button class="close-btn" onclick="calendarPanel.classList.remove('active')">✖</button>
       <h3>Calendario</h3>
       <input type="date" id="data">
       <textarea id="notaCalendario" placeholder="Scrivi appunto..."></textarea>
       <button onclick="salvaNotaCalendario()">Salva</button>
     </div>
 
+    <!-- Taccuino -->
     <div class="panel" id="notesPanel">
-      <button class="close-btn" onclick="chiudiNotes()">✖</button>
+      <button class="close-btn" onclick="chiudiTaccuino()">✖</button>
       <h3>Taccuino</h3>
       <textarea id="notaTaccuino" placeholder="Scrivi idea..."></textarea>
       <button onclick="salvaNotaTaccuino()">Salva</button>
@@ -234,16 +195,14 @@
     let calendario = JSON.parse(localStorage.getItem("calendario")) || {};
     let taccuino = localStorage.getItem("taccuino") || "";
 
-    // Carica post-it salvati
+    // Carica post-it
     postits.forEach(data => creaPostit(data.text, data.x, data.y));
 
-    // Aggiungi Post-it
     btnAggiungi.addEventListener("click", () => {
       creaPostit("Nuovo", 100, 100);
       salva();
     });
 
-    // Cancella tutto
     btnClear.addEventListener("click", () => {
       if(confirm("Sei sicuro di voler cancellare tutto?")){
         postits = [];
@@ -252,7 +211,6 @@
       }
     });
 
-    // Toggle calendario e taccuino
     btnCalendar.addEventListener("click", () => {
       calendarPanel.classList.toggle("active");
       notesPanel.classList.remove("active");
@@ -262,11 +220,11 @@
       calendarPanel.classList.remove("active");
       document.getElementById("notaTaccuino").value = taccuino;
     });
-    function chiudiNotes(){
+
+    function chiudiTaccuino() {
       notesPanel.classList.remove("active");
     }
 
-    // Funzioni Post-it
     function creaPostit(testo, x, y) {
       const postit = document.createElement("div");
       postit.className = "postit";
@@ -288,6 +246,7 @@
         offsetY = (e.touches ? e.touches[0].clientY : e.clientY) - elem.offsetTop;
         elem.style.cursor = "grabbing";
         elem.style.zIndex = 1000;
+        elem.style.transform = "rotate(0deg) scale(1.05)";
       }
 
       function duringDrag(e) {
@@ -303,15 +262,18 @@
         moving = false;
         elem.style.cursor = "grab";
         elem.style.zIndex = "";
-
-        // controllo se sopra al cestino
+        elem.style.transform = "rotate(3deg) scale(1)";
+        
+        // Controllo drop nel cestino
         const cestino = btnCestino.getBoundingClientRect();
-        const rect = elem.getBoundingClientRect();
+        const postRect = elem.getBoundingClientRect();
 
-        if (rect.right > cestino.left &&
-            rect.left < cestino.right &&
-            rect.bottom > cestino.top &&
-            rect.top < cestino.bottom) {
+        if (
+          postRect.left < cestino.right &&
+          postRect.right > cestino.left &&
+          postRect.top < cestino.bottom &&
+          postRect.bottom > cestino.top
+        ) {
           elem.remove();
           salva();
           return;
@@ -320,12 +282,10 @@
         salva();
       }
 
-      // Mouse
       elem.addEventListener("mousedown", startDrag);
       document.addEventListener("mousemove", duringDrag);
       document.addEventListener("mouseup", endDrag);
 
-      // Touch
       elem.addEventListener("touchstart", startDrag);
       document.addEventListener("touchmove", duringDrag);
       document.addEventListener("touchend", endDrag);
@@ -343,13 +303,11 @@
       localStorage.setItem("postits", JSON.stringify(postits));
     }
 
-    // Calendario
     const dataInput = document.getElementById("data");
     const notaCalendario = document.getElementById("notaCalendario");
 
     dataInput.addEventListener("change", () => {
-      let val = calendario[dataInput.value] || "";
-      notaCalendario.value = val;
+      notaCalendario.value = calendario[dataInput.value] || "";
     });
 
     function salvaNotaCalendario() {
@@ -358,7 +316,6 @@
       alert("Nota salvata per il giorno " + dataInput.value);
     }
 
-    // Taccuino
     function salvaNotaTaccuino() {
       taccuino = document.getElementById("notaTaccuino").value;
       localStorage.setItem("taccuino", taccuino);
